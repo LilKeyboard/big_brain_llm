@@ -74,14 +74,20 @@ def poll_updates():
         try:
             updates = get_updates(offset=last_update_id)
             for update in updates.get('result', []):
-                message = update['message']['text']
-                chat_id = update['message']['chat']['id']
-                
-                print(f"\nOtrzymana wiadomość: {message}")
-                response = handle_message(message)
-                print(f"Wysyłana odpowiedź: {response}")
-                
-                send_message(chat_id, response)
+                message_data = update.get('message', {})
+                chat_id = message_data.get('chat', {}).get('id')
+
+                if 'text' in message_data:
+                    message = message_data['text']
+                    print(f"\nOtrzymana wiadomość: {message}")
+                    
+                    response = handle_message(message)
+                    print(f"Wysyłana odpowiedź: {response}")
+                    
+                    send_message(chat_id, response)
+                else:
+                    print("Otrzymano wiadomość, która nie jest tekstem.")
+                    send_message(chat_id, "Przepraszam, obsługuję tylko wiadomości tekstowe.")
                 
                 last_update_id = update['update_id'] + 1
         except KeyboardInterrupt:
